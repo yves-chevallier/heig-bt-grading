@@ -1,0 +1,161 @@
+{
+  "source": "Evaluation TB Grilles et protocole.xlsm",
+  "criteria": [
+    {
+      "id": "intermediate",
+      "title": "Qualité de la revue de projet et/ou du rapport intermédiaire",
+      "description": "état du projet, décomposition, évaluation comparative des solutions, spécifications détaillées, planification, organisation de la documentation",
+      "minimum": 10
+    },
+    {
+      "id": "personal",
+      "title": "Déroulement et apport personnel",
+      "description": "gestion du temps et des imprévus, indépendance, initiative, assiduité",
+      "minimum": 15
+    },
+    {
+      "id": "report",
+      "title": "Qualité du rapport final et de la documentation",
+      "description": "exhaustivité des informations, clarté de rédaction et de présentation, synthèse",
+      "minimum": 15
+    },
+    {
+      "id": "work",
+      "title": "Qualité de travail",
+      "description": "respect du cahier des charges et de la planification, pertinence technique et scientifique des résultats obtenus, innovation et créativité, tests",
+      "minimum": 20
+    },
+    {
+      "id": "defense",
+      "title": "Qualité de la soutenance",
+      "description": "connaissance du sujet et du domaine concerné, clarté, qualité du support visuel, capacité de vulgarisation, conviction, pertinence du propos",
+      "minimum": 15
+    }
+  ],
+  "oralCriteria": [
+    {
+      "id": "oral-1",
+      "title": "S'exprimer de façon maîtrisée en s'adressant à un auditoire",
+      "max": 4,
+      "group": "expression"
+    },
+    {
+      "id": "oral-2",
+      "title": "Employer un vocabulaire précis et professionnel",
+      "max": 4,
+      "group": "expression"
+    },
+    {
+      "id": "oral-3",
+      "title": "Utiliser le bon ton, faire vivre l'exposé oral",
+      "max": 4,
+      "group": "expression"
+    },
+    {
+      "id": "oral-4",
+      "title": "Faire preuve d'une attitude adéquate (manière de parler, ponctualité, niveau de préparation)",
+      "max": 4,
+      "group": "expression"
+    },
+    {
+      "id": "oral-5",
+      "title": "Gérer le temps imparti à l'exposé oral",
+      "max": 4,
+      "group": "expression"
+    },
+    {
+      "id": "oral-6",
+      "title": "Structurer son exposé",
+      "max": 4,
+      "group": "subject"
+    },
+    {
+      "id": "oral-7",
+      "title": "Présenter et justifier sa démarche (méthodologie)",
+      "max": 4,
+      "group": "subject"
+    },
+    {
+      "id": "oral-8",
+      "title": "Présenter des diapositives de qualité",
+      "max": 4,
+      "group": "subject"
+    },
+    {
+      "id": "oral-9",
+      "title": "Présenter son travail ou un élément de son travail efficacement",
+      "max": 5,
+      "group": "subject"
+    },
+    {
+      "id": "oral-10",
+      "title": "Exprimer les connaissances/compétences acquises durant le projet",
+      "max": 4,
+      "group": "subject"
+    },
+    {
+      "id": "oral-11",
+      "title": "Porter un regard critique sur sa production individuelle, s'autoévaluer",
+      "max": 4,
+      "group": "subject"
+    },
+    {
+      "id": "oral-12",
+      "title": "Répondre de manière argumentée et pertinente aux questions",
+      "max": 5,
+      "group": "subject"
+    }
+  ],
+  "programs": [
+    {
+      "code": "ENTE",
+      "label": "Énergie et techniques environnementales"
+    },
+    {
+      "code": "GE",
+      "label": "Génie Électrique"
+    },
+    {
+      "code": "MTEC",
+      "label": "Microtechniques"
+    },
+    {
+      "code": "SYND",
+      "label": "Systèmes industriels"
+    }
+  ],
+  "orientations": [
+    {
+      "code": "EBA",
+      "label": "Énergétique du bâtiment"
+    },
+    {
+      "code": "THI",
+      "label": "Thermique industrielle"
+    },
+    {
+      "code": "THO",
+      "label": "Thermotronique"
+    },
+    {
+      "code": "EAI",
+      "label": "Électronique et Automatisation industrielle"
+    },
+    {
+      "code": "EEM",
+      "label": "Électronique embarquée et Mécatronique"
+    },
+    {
+      "code": "EN",
+      "label": "Systèmes énergétiques"
+    },
+    {
+      "code": "MI",
+      "label": "Mécatronique"
+    },
+    {
+      "code": "SIC",
+      "label": "Conception"
+    }
+  ]
+}

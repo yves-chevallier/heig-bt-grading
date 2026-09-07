@@ -1,0 +1,11 @@
+node_modules/
+dist/
+data/
+.env
+*.sqlite*
+test-results/
+playwright-report/
+~$*
+secrets/
+.agents/
+.codex/

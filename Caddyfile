@@ -1,0 +1,19 @@
+# Vhost de tb.chevallier.io.
+#
+# La VM héberge deux services derrière le même Caddy natif (apt). Le
+# /etc/caddy/Caddyfile de l'hôte ne contient qu'un `import conf.d/*.caddy` :
+# chaque projet dépose son propre fragment, sans jamais écraser celui de
+# l'autre. Déploiement :
+#   sudo cp Caddyfile /etc/caddy/conf.d/tb.caddy && sudo systemctl reload caddy
+tb.chevallier.io {
+	encode gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+
+	# 3000 est pris par heig-classroom ; tb écoute sur 3001 (loopback).
+	reverse_proxy localhost:3001
+}

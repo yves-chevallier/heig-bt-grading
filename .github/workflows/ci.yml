@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm test
+
+  # Image de production, construite ICI puis poussée sur GHCR : la VM
+  # (453 Mio / 1 CPU) ne doit jamais builder — un build local y étrangle le
+  # Postgres de heig-classroom (deploy.md §7).
+  image:
+    needs: checks
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          # :latest pour le déploiement courant, :<sha> conservé pour rollback.
+          tags: |
+            ghcr.io/yves-chevallier/heig-bt-grading:latest
+            ghcr.io/yves-chevallier/heig-bt-grading:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Déploiement : le runner se connecte en SSH à la VM, dont le authorized_keys
+  # épingle la clé du CI à /opt/evaluation-tb/deploy.sh (commande forcée) — la
+  # clé ne peut QUE déployer tb, jamais ouvrir un shell ni toucher à
+  # heig-classroom. Le token GHCR éphémère est passé comme commande SSH
+  # (→ $SSH_ORIGINAL_COMMAND) pour tirer l'image privée sans stocker le moindre
+  # credential sur la VM. Sans le secret DEPLOY_SSH_KEY le job ne fait rien :
+  # le pipeline reste vert et l'image est quand même publiée.
+  deploy:
+    needs: image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    concurrency:
+      group: prod-deploy-tb
+      cancel-in-progress: false
+    env:
+      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+    steps:
+      - name: Skip when the deploy key is not configured
+        if: env.DEPLOY_SSH_KEY == ''
+        run: echo "::notice::DEPLOY_SSH_KEY secret not set — image pushed, deploy skipped."
+      - name: Set up SSH (pinned host key)
+        if: env.DEPLOY_SSH_KEY != ''
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          echo 'tb.chevallier.io ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDlhwwqTDukdVfgHNPbi6hTovwF1MhZEKnDj7NSdHYQl' >> ~/.ssh/known_hosts
+      - name: Trigger deploy (forced command runs deploy.sh on the VM)
+        if: env.DEPLOY_SSH_KEY != ''
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ssh -i ~/.ssh/id_ed25519 root@tb.chevallier.io "$GHCR_TOKEN"
