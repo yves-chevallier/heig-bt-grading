@@ -17,8 +17,19 @@ set -euo pipefail
 
 cd /opt/evaluation-tb
 
-# Login GHCR facultatif (package privé) : le token arrive par SSH, est passé
-# directement sur stdin de docker login (jamais eval'é), puis oublié.
+# Les deux services de la VM partageaient /root/.docker/config.json : le login
+# de heig-classroom (utilisateur heig-tin-info) y restait stocké et faisait
+# échouer le pull de CETTE image en « denied », alors qu'elle est publique.
+# On isole donc l'authentification dans un répertoire jetable, que docker et
+# docker compose héritent par DOCKER_CONFIG ; le fichier partagé n'est plus
+# touché, dans un sens comme dans l'autre.
+DOCKER_CONFIG="$(mktemp -d)"
+export DOCKER_CONFIG
+trap 'rm -rf "$DOCKER_CONFIG"' EXIT
+
+# Login GHCR facultatif (utile seulement si le package redevient privé) : le
+# token arrive par SSH, est passé directement sur stdin de docker login
+# (jamais eval'é), et disparaît avec le répertoire ci-dessus.
 if [ -n "${SSH_ORIGINAL_COMMAND:-}" ]; then
   printf '%s' "$SSH_ORIGINAL_COMMAND" \
     | docker login ghcr.io -u yves-chevallier --password-stdin >/dev/null
