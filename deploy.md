@@ -44,6 +44,11 @@ sudo caddy validate --config /etc/caddy/Caddyfile   # avant tout reload
 sudo systemctl reload caddy
 ```
 
+Cette bascule a été faite le 2026-09-07 ; l'ancien fichier monolithique est
+conservé en `/etc/caddy/Caddyfile.bak-2026-09-07`. **Recharger seulement une
+fois le DNS propagé** : sur un nom qui ne résout pas, Caddy échoue au challenge
+ACME et son backoff peut retarder l'émission de plusieurs heures.
+
 Caddy obtient le certificat de `tb.chevallier.io` automatiquement (ACME
 HTTP-01, ports 80/443 déjà ouverts dans ufw). Aucune règle de pare-feu à
 ajouter : le conteneur n'écoute que sur `127.0.0.1:3001`.
@@ -99,9 +104,17 @@ printf 'command="/opt/evaluation-tb/deploy.sh",restrict %s\n' \
   "$(cat tb_ci_deploy.pub)" >> /root/.ssh/authorized_keys
 ```
 
-Le package GHCR étant privé, il faut aussi autoriser le dépôt à le tirer :
-page du package sur GitHub → _Package settings_ → _Manage Actions access_ →
-ajouter `yves-chevallier/heig-bt-grading` en `Read`.
+Le dépôt étant public, le package GHCR l'est aussi : la VM tire l'image sans
+credential. Le `docker login` de `deploy.sh` ne sert que si le dépôt repasse en
+privé.
+
+**Piège vérifié le 2026-09-07** : les deux services partagent
+`/root/.docker/config.json`. Le login de heig-classroom (utilisateur
+`heig-tin-info`) y reste stocké et fait échouer le pull de l'image de tb en
+`denied`, alors qu'elle est publique — docker envoie des identifiants valides
+mais sans droit sur ce package, et le registre refuse au lieu de retomber en
+anonyme. `deploy.sh` isole donc son authentification dans un `DOCKER_CONFIG`
+jetable. Le `deploy.sh` de heig-classroom mériterait le même traitement.
 
 ### Rollback
 
@@ -129,13 +142,13 @@ le dump (et supprimer les `-wal` / `-shm` résiduels), redémarrer.
 
 ## 7. Contraintes de la VM partagée
 
-- **Disque** : 8,6 Go, historiquement saturé à 98 %. Les stores pnpm laissés
-  par d'anciens builds sur VM ont été supprimés (2026-09-07, ~1,5 Go
-  récupérés). Surveiller `df -h /` ; `docker image prune -f` est fait à chaque
-  déploiement.
-- **RAM** : 453 Mio pour les deux services. tb (SQLite, un seul processus Node)
-  est léger, mais toute nouvelle dépendance lourde se paierait sur le Postgres
-  de heig-classroom.
+- **Disque** : 24 Go depuis le redimensionnement du 2026-09-07 (31 % occupés).
+  Auparavant 8,6 Go saturés à 98 % ; les stores pnpm laissés par d'anciens
+  builds sur VM ont été supprimés à cette occasion (~1,5 Go). Surveiller
+  `df -h /` ; `docker image prune -f` est fait à chaque déploiement.
+- **RAM** : 956 Mio pour les deux services (453 Mio avant le redimensionnement),
+  plus 2 Gio de swap. tb (SQLite, un seul processus Node) est léger, mais toute
+  nouvelle dépendance lourde se paierait sur le Postgres de heig-classroom.
 - **Redémarrage de Caddy** : `systemctl reload caddy` recharge les deux vhosts.
   Toujours `caddy validate` avant : une erreur de syntaxe dans `tb.caddy`
   empêcherait aussi heig-classroom de recharger sa configuration.
