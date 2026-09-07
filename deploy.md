@@ -59,6 +59,11 @@ ajouter : le conteneur n'écoute que sur `127.0.0.1:3001`.
 sudo git clone git@github.com:yves-chevallier/heig-bt-grading.git /opt/evaluation-tb
 cd /opt/evaluation-tb && sudo mkdir -p secrets backups && sudo chmod 700 secrets
 
+# Le conteneur tourne en USER node (uid 1000) : sans ce chown, scripts/backup.mjs
+# échoue en « unable to open database file » sur le bind-mount ./backups, qui
+# appartiendrait à root. Constaté en production le 2026-09-07.
+sudo chown 1000:1000 backups
+
 # Clé privée edu-ID (EC P-256, PKCS#8) — jamais dans git :
 #   secrets/eduid-private-key.pem   (chmod 600)
 # Sa clé publique (JWK, kid tb-eduid-2026) est enregistrée auprès de l'AAI.
@@ -128,7 +133,8 @@ IMAGE_TAG=<sha du commit sain> docker compose -f compose.prod.yml \
 `scripts/backup.mjs` produit une copie cohérente par `VACUUM INTO` sans arrêter
 l'application (la base est en WAL : une simple copie du fichier ne le serait
 pas). Rétention 30 jours dans `/opt/evaluation-tb/backups`, hors du volume de
-la base. Cron quotidien sur l'hôte :
+la base, et ce répertoire doit appartenir à l'uid 1000 (§3). Cron quotidien sur
+l'hôte :
 
 ```cron
 17 3 * * * cd /opt/evaluation-tb && docker compose -f compose.prod.yml --env-file .env.prod exec -T web node scripts/backup.mjs >> /var/log/tb-backup.log 2>&1
