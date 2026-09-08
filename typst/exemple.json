@@ -1,0 +1,342 @@
+{
+  "meta": {
+    "student": "Camille Müller",
+    "title": "Commande d’un système énergétique",
+    "program": "GE",
+    "orientation": "",
+    "teacher": "Alex Martin",
+    "expert": "Sam Dupont",
+    "defense": "18.09.2026",
+    "room": "A203",
+    "version": 1,
+    "locked": false,
+    "status": "Brouillon · Évaluation non verrouillée"
+  },
+  "criteria": [
+    {
+      "phase": "Évaluation intermédiaire",
+      "number": 1,
+      "title": "Qualité de la revue de projet et/ou du rapport intermédiaire",
+      "description": "état du projet, décomposition, évaluation comparative des solutions, spécifications détaillées, planification, organisation de la documentation",
+      "weight": 10,
+      "minimum": 10,
+      "teacher": "4.5",
+      "expert": "",
+      "final": "4.5"
+    },
+    {
+      "phase": "Évaluation en fin de projet",
+      "number": 2,
+      "title": "Déroulement et apport personnel",
+      "description": "gestion du temps et des imprévus, indépendance, initiative, assiduité",
+      "weight": 20,
+      "minimum": 15,
+      "teacher": "5.0",
+      "expert": "",
+      "final": "5.0"
+    },
+    {
+      "phase": "",
+      "number": 3,
+      "title": "Qualité du rapport final et de la documentation",
+      "description": "exhaustivité des informations, clarté de rédaction et de présentation, synthèse",
+      "weight": 15,
+      "minimum": 15,
+      "teacher": "5.0",
+      "expert": "5.0",
+      "final": "5.0"
+    },
+    {
+      "phase": "",
+      "number": 4,
+      "title": "Qualité de travail",
+      "description": "respect du cahier des charges et de la planification, pertinence technique et scientifique des résultats obtenus, innovation et créativité, tests",
+      "weight": 30,
+      "minimum": 20,
+      "teacher": "5.5",
+      "expert": "5.0",
+      "final": "5.3"
+    },
+    {
+      "phase": "Soutenance orale",
+      "number": 5,
+      "title": "Qualité de la soutenance",
+      "description": "connaissance du sujet et du domaine concerné, clarté, qualité du support visuel, capacité de vulgarisation, conviction, pertinence du propos",
+      "weight": 25,
+      "minimum": 15,
+      "teacher": "4.7",
+      "expert": "4.6",
+      "final": "4.7"
+    }
+  ],
+  "overall": {
+    "weight": 100,
+    "final": "5.0",
+    "mention": "C · Bien",
+    "beforeRounding": "4.965"
+  },
+  "decisions": [
+    {
+      "label": "Félicitations du jury",
+      "checked": true
+    },
+    {
+      "label": "Proposition de prix",
+      "checked": false
+    },
+    {
+      "label": "Travail confidentiel",
+      "checked": false
+    },
+    {
+      "label": "Diffusion du travail sur tb.heig-vd.ch",
+      "checked": true
+    }
+  ],
+  "scale": [
+    {
+      "range": "5.8–6.0",
+      "code": "A",
+      "label": "Excellent",
+      "active": false
+    },
+    {
+      "range": "5.3–5.7",
+      "code": "B",
+      "label": "Très bien",
+      "active": false
+    },
+    {
+      "range": "4.8–5.2",
+      "code": "C",
+      "label": "Bien",
+      "active": true
+    },
+    {
+      "range": "4.3–4.7",
+      "code": "D",
+      "label": "Satisfaisant",
+      "active": false
+    },
+    {
+      "range": "4.0–4.2",
+      "code": "E",
+      "label": "Passable",
+      "active": false
+    },
+    {
+      "range": "3.5–3.9",
+      "code": "FX",
+      "label": "Échec",
+      "active": false
+    },
+    {
+      "range": "1.0–3.4",
+      "code": "F",
+      "label": "Échec",
+      "active": false
+    }
+  ],
+  "remarks": "Remarque du jury : travail solide et bien documenté, défense convaincante.",
+  "protocol": {
+    "grade": "4.7",
+    "proceedings": "",
+    "presentation": "Présentation claire et structurée.",
+    "questions": "Les réponses sont argumentées.",
+    "overall": "Excellente maîtrise du sujet."
+  },
+  "orals": [
+    {
+      "role": "Enseignant·e",
+      "groups": [
+        {
+          "title": "Maîtrise de l’expression orale",
+          "max": 20,
+          "rows": [
+            {
+              "title": "S'exprimer de façon maîtrisée en s'adressant à un auditoire",
+              "points": 4,
+              "max": 4,
+              "comment": ""
+            },
+            {
+              "title": "Employer un vocabulaire précis et professionnel",
+              "points": 4,
+              "max": 4,
+              "comment": ""
+            },
+            {
+              "title": "Utiliser le bon ton, faire vivre l'exposé oral",
+              "points": 4,
+              "max": 4,
+              "comment": ""
+            },
+            {
+              "title": "Faire preuve d'une attitude adéquate (manière de parler, ponctualité, niveau de préparation)",
+              "points": 4,
+              "max": 4,
+              "comment": ""
+            },
+            {
+              "title": "Gérer le temps imparti à l'exposé oral",
+              "points": 4,
+              "max": 4,
+              "comment": ""
+            }
+          ]
+        },
+        {
+          "title": "Maîtrise du sujet présenté",
+          "max": 30,
+          "rows": [
+            {
+              "title": "Structurer son exposé",
+              "points": 4,
+              "max": 4,
+              "comment": ""
+            },
+            {
+              "title": "Présenter et justifier sa démarche (méthodologie)",
+              "points": 4,
+              "max": 4,
+              "comment": ""
+            },
+            {
+              "title": "Présenter des diapositives de qualité",
+              "points": 4,
+              "max": 4,
+              "comment": ""
+            },
+            {
+              "title": "Présenter son travail ou un élément de son travail efficacement",
+              "points": 5,
+              "max": 5,
+              "comment": ""
+            },
+            {
+              "title": "Exprimer les connaissances/compétences acquises durant le projet",
+              "points": 0,
+              "max": 4,
+              "comment": ""
+            },
+            {
+              "title": "Porter un regard critique sur sa production individuelle, s'autoévaluer",
+              "points": 0,
+              "max": 4,
+              "comment": ""
+            },
+            {
+              "title": "Répondre de manière argumentée et pertinente aux questions",
+              "points": 0,
+              "max": 5,
+              "comment": ""
+            }
+          ]
+        }
+      ],
+      "points": 37,
+      "pointsMax": 50,
+      "presence": 10,
+      "presenceMax": 10,
+      "total": 47,
+      "totalMax": 60,
+      "grade": "4.7"
+    },
+    {
+      "role": "Expert·e",
+      "groups": [
+        {
+          "title": "Maîtrise de l’expression orale",
+          "max": 20,
+          "rows": [
+            {
+              "title": "S'exprimer de façon maîtrisée en s'adressant à un auditoire",
+              "points": 4,
+              "max": 4,
+              "comment": ""
+            },
+            {
+              "title": "Employer un vocabulaire précis et professionnel",
+              "points": 4,
+              "max": 4,
+              "comment": ""
+            },
+            {
+              "title": "Utiliser le bon ton, faire vivre l'exposé oral",
+              "points": 4,
+              "max": 4,
+              "comment": ""
+            },
+            {
+              "title": "Faire preuve d'une attitude adéquate (manière de parler, ponctualité, niveau de préparation)",
+              "points": 4,
+              "max": 4,
+              "comment": ""
+            },
+            {
+              "title": "Gérer le temps imparti à l'exposé oral",
+              "points": 4,
+              "max": 4,
+              "comment": ""
+            }
+          ]
+        },
+        {
+          "title": "Maîtrise du sujet présenté",
+          "max": 30,
+          "rows": [
+            {
+              "title": "Structurer son exposé",
+              "points": 4,
+              "max": 4,
+              "comment": ""
+            },
+            {
+              "title": "Présenter et justifier sa démarche (méthodologie)",
+              "points": 4,
+              "max": 4,
+              "comment": ""
+            },
+            {
+              "title": "Présenter des diapositives de qualité",
+              "points": 4,
+              "max": 4,
+              "comment": ""
+            },
+            {
+              "title": "Présenter son travail ou un élément de son travail efficacement",
+              "points": 4,
+              "max": 5,
+              "comment": ""
+            },
+            {
+              "title": "Exprimer les connaissances/compétences acquises durant le projet",
+              "points": 0,
+              "max": 4,
+              "comment": ""
+            },
+            {
+              "title": "Porter un regard critique sur sa production individuelle, s'autoévaluer",
+              "points": 0,
+              "max": 4,
+              "comment": ""
+            },
+            {
+              "title": "Répondre de manière argumentée et pertinente aux questions",
+              "points": 0,
+              "max": 5,
+              "comment": ""
+            }
+          ]
+        }
+      ],
+      "points": 36,
+      "pointsMax": 50,
+      "presence": 10,
+      "presenceMax": 10,
+      "total": 46,
+      "totalMax": 60,
+      "grade": "4.6"
+    }
+  ]
+}

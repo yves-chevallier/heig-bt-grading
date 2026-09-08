@@ -6,3 +6,5 @@ playwright-report
 pnpm-lock.yaml
 shared/rubric.json
 TODO.md
+typst/*.typ
+typst/exemple.json

@@ -19,6 +19,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "pdf:data": "node --import tsx scripts/typst-data.mjs > typst/exemple.json",
+    "pdf:typst": "typst compile --root . typst/evaluation.typ typst/evaluation.pdf",
     "admin:password": "node scripts/hash-password.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

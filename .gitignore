@@ -9,3 +9,4 @@ playwright-report/
 secrets/
 .agents/
 .codex/
+typst/*.pdf
