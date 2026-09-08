@@ -59,10 +59,14 @@ ajouter : le conteneur n'écoute que sur `127.0.0.1:3001`.
 sudo git clone git@github.com:yves-chevallier/heig-bt-grading.git /opt/evaluation-tb
 cd /opt/evaluation-tb && sudo mkdir -p secrets backups && sudo chmod 700 secrets
 
-# Le conteneur tourne en USER node (uid 1000) : sans ce chown, scripts/backup.mjs
-# échoue en « unable to open database file » sur le bind-mount ./backups, qui
-# appartiendrait à root. Constaté en production le 2026-09-07.
+# Le conteneur tourne en USER node (uid 1000). Sans ces chown, les deux
+# bind-mounts appartiennent à root et sont inutilisables depuis l'application :
+#   - ./backups  -> scripts/backup.mjs échoue en « unable to open database file »
+#   - ./secrets  -> la clé edu-ID est illisible, et comme oidc.ts la charge
+#     paresseusement, la panne n'apparaît qu'au premier login réel, pas au
+#     démarrage. Constaté en production les 2026-09-07 et 2026-09-08.
 sudo chown 1000:1000 backups
+sudo chown -R 1000:1000 secrets   # à refaire après tout dépôt de clé
 
 # Clé privée edu-ID (EC P-256, PKCS#8) — jamais dans git :
 #   secrets/eduid-private-key.pem   (chmod 600)
@@ -146,7 +150,51 @@ le dump (et supprimer les `-wal` / `-shm` résiduels), redémarrer.
 **À câbler**, comme pour heig-classroom : la copie hors droplet
 (`rclone copy backups remote:tb-backups`).
 
-## 7. Contraintes de la VM partagée
+## 7. SWITCH edu-ID (AAI)
+
+La ressource « HEIG BT Grading » est enregistrée dans l'AAI Resource Registry,
+fédération **edu-ID OIDC** (production). Authentification client par
+`private_key_jwt` / ES256 : aucun secret partagé, seule la clé publique est
+déposée chez SWITCH.
+
+| Réglage                 | Valeur                                                                 |
+| ----------------------- | ---------------------------------------------------------------------- |
+| `OIDC_ISSUER`           | `https://login.eduid.ch/` (le test est `https://login.test.eduid.ch/`) |
+| `OIDC_CLIENT_ID`        | délivré par le registre                                                |
+| `OIDC_PRIVATE_KEY_PATH` | `/app/secrets/eduid-private-key.pem`                                   |
+| `OIDC_PRIVATE_KEY_KID`  | `tb-eduid-2026`                                                        |
+| Redirect URI            | `https://tb.chevallier.io/auth/callback`                               |
+| Scopes                  | `openid profile email`                                                 |
+
+Le `kid` doit être identique des deux côtés : c'est lui que le serveur place
+dans l'en-tête du client assertion et qui permet à SWITCH de retrouver la clé.
+La clé publique se redérive à tout moment depuis la clé privée, sans jamais
+exposer celle-ci :
+
+```bash
+node -e 'const c=require("node:crypto"),f=require("node:fs");
+const j=c.createPublicKey(c.createPrivateKey(f.readFileSync(process.argv[1]))).export({format:"jwk"});
+console.log(JSON.stringify({keys:[{...j,use:"sig",alg:"ES256",kid:"tb-eduid-2026"}]},null,2))' \
+  secrets/eduid-private-key.pem
+```
+
+### Diagnostic des erreurs de login
+
+L'IdP ne renvoie pas d'`error` OAuth mais une page HTML ; le message y est
+explicite et distingue bien les cas :
+
+- « The application you have accessed is not registered for use with this
+  service » — client inconnu de cet IdP : soit on vise le mauvais issuer
+  (test contre production), soit le registre n'a pas encore propagé. La
+  propagation a pris quelques minutes le 2026-09-08.
+- « An error occurred: InvalidRedirectionURI » — le client est bien enregistré,
+  mais la redirect URI appelée ne figure pas parmi celles déclarées. La
+  comparaison est exacte : ni barre oblique finale, ni différence de casse.
+
+Un simple `curl` sur `/auth/login` suffit à tester sans navigateur : il renvoie
+un 302 dont le `location` peut être appelé directement.
+
+## 8. Contraintes de la VM partagée
 
 - **Disque** : 24 Go depuis le redimensionnement du 2026-09-07 (31 % occupés).
   Auparavant 8,6 Go saturés à 98 % ; les stores pnpm laissés par d'anciens
