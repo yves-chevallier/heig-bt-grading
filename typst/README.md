@@ -1,58 +1,54 @@
 # Modèle Typst des PDF d'évaluation
 
-Essai de remplacement du générateur PDFKit (`server/pdf.ts`) par un modèle
-Typst. **Local uniquement pour l'instant** : rien n'est branché sur le serveur,
-qui continue de produire les PDF avec PDFKit.
-
-## Rendre
-
-```sh
-pnpm pdf:data          # exporte les données d'exemple vers typst/exemple.json
-pnpm pdf:typst         # compile typst/evaluation.pdf
-```
-
-Ou directement, si `typst` est dans le `PATH` :
-
-```sh
-typst compile --root . typst/evaluation.typ typst/evaluation.pdf
-```
-
-`--root .` est nécessaire : le modèle lit `assets/heig-vd.svg`, hors de son
-propre répertoire.
+`evaluation.typ` compose les cinq feuilles A4 (grille du jury, protocole oral,
+grilles enseignant·e et expert·e, feuille de résultats). C'est le générateur
+utilisé par le serveur : `server/pdf.ts` importe la fonction `render` du modèle
+depuis un petit source passé sur l'entrée standard du binaire `typst`, avec les
+données inlinées en JSON. Aucun fichier temporaire, et `--root` reste le
+répertoire de l'application : le modèle ne peut lire que le logo
+(`assets/heig-vd.svg`).
 
 ## Répartition des rôles
 
-Aucun calcul dans le modèle. `scripts/typst-data.mjs` importe `shared/evaluation.ts`
-et produit un JSON où moyennes, arrondis, mention et totaux sont déjà résolus :
+Aucun calcul dans le modèle. `server/pdf-data.ts` importe `shared/evaluation.ts`
+et produit un objet où moyennes, arrondis, mention et totaux sont déjà résolus :
 le Typst ne fait que mettre en page. Les règles de notation restent donc à un
 seul endroit, celui que couvrent les tests.
 
-Pour rendre une évaluation réelle plutôt que l'exemple, importer `typstData`
-depuis `scripts/typst-data.mjs` et lui passer un `EvaluationRecord`.
+`render(d, student: false)` prend cet objet ; `student: true` ne produit que la
+feuille de résultats remise à l'étudiant·e, sans numérotation.
 
-## Écarts assumés avec la version PDFKit
+## Aperçu local
 
-Même disposition d'ensemble — logo en haut à gauche, titre à droite, bandeau
-d'identité, grille, décisions et échelle, remarques, signatures, pied de page —
-avec quelques différences délibérées :
+```sh
+pnpm pdf:data          # exporte les données d'exemple vers typst/exemple.json
+pnpm pdf:typst         # compile typst/exemple.pdf
+```
 
-- **Le logo garde le rouge HEIG-VD** (`#da291c`). La version PDFKit extrait les
-  tracés du SVG et les remplit en noir, ce qui perd la couleur de marque.
-- **Le rouge ne sert qu'à trois choses** : le filet sous le titre, la note
-  finale, les décisions cochées. Tout le reste reste en gris.
-- **Police Lato** au lieu de DejaVu Sans. Voir la réserve ci-dessous.
-- Filets allégés, intitulés de colonnes en petites capitales espacées,
-  chiffres tabulaires pour que les notes s'alignent en colonne.
-- L'encadré de remarques s'étire jusqu'aux signatures au lieu d'avoir une
-  hauteur fixe suivie d'un vide.
+`exemple.typ` appelle `render` sur `exemple.json`, que produit
+`scripts/typst-data.mjs` à partir de la fixture des tests, avec des notes
+insuffisantes pour montrer leur mise en évidence. Les PDF sont ignorés par git.
 
-## Réserve avant de brancher ça sur le serveur
+Pour rendre une évaluation réelle, passer par l'application ou par
+`renderPdf` dans `server/pdf.ts`.
 
-Lato vient de la machine locale et **n'est pas dans l'image Docker**, qui
-n'embarque que `assets/fonts/DejaVuSans*.ttf`. Trois options : ajouter les
-fichiers Lato au dépôt (licence SIL OFL, redistribuable), installer le paquet
-système dans le `Dockerfile`, ou revenir à DejaVu Sans. Le modèle a déjà
-DejaVu Sans en police de repli, donc il compile sans Lato — mais le rendu perd
-en finesse.
+## Mise en page
 
-Il faudra aussi un binaire `typst` dans l'image, ou la bibliothèque via WASM.
+- Le rouge HEIG-VD (`#da291c`) ne sert qu'au logo, aux notes inférieures à 4.0
+  et aux félicitations du jury ; tout le reste est en gris.
+- Police Lato (chiffres tabulaires), avec DejaVu Sans (`assets/fonts`) en
+  repli si Lato n'est pas installée.
+- Les encadrés de remarques mesurent leur contenu : s'il reste de la place, ils
+  remplissent la page jusqu'aux signatures ; sinon ils prennent leur hauteur
+  naturelle et se poursuivent sur la page suivante. Les feuilles du jury sont
+  numérotées « Page n sur N » d'après la position réelle de la feuille de
+  résultats, qui n'est pas numérotée.
+- Les signatures n'apparaissent que sur la grille du jury et la feuille de
+  résultats.
+
+## Binaire et polices
+
+Le serveur appelle `typst` dans le `PATH`, ou le chemin donné par `TYPST_BIN`.
+`scripts/install-typst.sh` installe la version épinglée (somme de contrôle
+vérifiée) ; le `Dockerfile` et le CI l'utilisent, et l'image de production
+ajoute le paquet `fonts-lato`. Une compilation prend environ 0,4 s et 45 Mio.

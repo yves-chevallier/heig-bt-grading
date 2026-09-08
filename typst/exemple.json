@@ -31,9 +31,9 @@
       "description": "gestion du temps et des imprévus, indépendance, initiative, assiduité",
       "weight": 20,
       "minimum": 15,
-      "teacher": "5.0",
+      "teacher": "3.5",
       "expert": "",
-      "final": "5.0"
+      "final": "3.5"
     },
     {
       "phase": "",
@@ -42,9 +42,9 @@
       "description": "exhaustivité des informations, clarté de rédaction et de présentation, synthèse",
       "weight": 15,
       "minimum": 15,
-      "teacher": "5.0",
-      "expert": "5.0",
-      "final": "5.0"
+      "teacher": "3.8",
+      "expert": "3.6",
+      "final": "3.7"
     },
     {
       "phase": "",
@@ -53,9 +53,9 @@
       "description": "respect du cahier des charges et de la planification, pertinence technique et scientifique des résultats obtenus, innovation et créativité, tests",
       "weight": 30,
       "minimum": 20,
-      "teacher": "5.5",
-      "expert": "5.0",
-      "final": "5.3"
+      "teacher": "4.2",
+      "expert": "4.0",
+      "final": "4.1"
     },
     {
       "phase": "Soutenance orale",
@@ -64,21 +64,21 @@
       "description": "connaissance du sujet et du domaine concerné, clarté, qualité du support visuel, capacité de vulgarisation, conviction, pertinence du propos",
       "weight": 25,
       "minimum": 15,
-      "teacher": "4.7",
-      "expert": "4.6",
-      "final": "4.7"
+      "teacher": "3.3",
+      "expert": "3.7",
+      "final": "3.5"
     }
   ],
   "overall": {
     "weight": 100,
-    "final": "5.0",
-    "mention": "C · Bien",
-    "beforeRounding": "4.965"
+    "final": "3.8",
+    "mention": "FX · Échec",
+    "beforeRounding": "3.810"
   },
   "decisions": [
     {
       "label": "Félicitations du jury",
-      "checked": true
+      "checked": false
     },
     {
       "label": "Proposition de prix",
@@ -90,7 +90,7 @@
     },
     {
       "label": "Diffusion du travail sur tb.heig-vd.ch",
-      "checked": true
+      "checked": false
     }
   ],
   "scale": [
@@ -110,7 +110,7 @@
       "range": "4.8–5.2",
       "code": "C",
       "label": "Bien",
-      "active": true
+      "active": false
     },
     {
       "range": "4.3–4.7",
@@ -128,7 +128,7 @@
       "range": "3.5–3.9",
       "code": "FX",
       "label": "Échec",
-      "active": false
+      "active": true
     },
     {
       "range": "1.0–3.4",
@@ -137,9 +137,9 @@
       "active": false
     }
   ],
-  "remarks": "Remarque du jury : travail solide et bien documenté, défense convaincante.",
+  "remarks": "Rapport incomplet sur la validation expérimentale ; la soutenance n’a pas permis de lever les doutes du jury.",
   "protocol": {
-    "grade": "4.7",
+    "grade": "3.5",
     "proceedings": "",
     "presentation": "Présentation claire et structurée.",
     "questions": "Les réponses sont argumentées.",
@@ -155,31 +155,31 @@
           "rows": [
             {
               "title": "S'exprimer de façon maîtrisée en s'adressant à un auditoire",
-              "points": 4,
+              "points": 3,
               "max": 4,
               "comment": ""
             },
             {
               "title": "Employer un vocabulaire précis et professionnel",
-              "points": 4,
+              "points": 3,
               "max": 4,
               "comment": ""
             },
             {
               "title": "Utiliser le bon ton, faire vivre l'exposé oral",
-              "points": 4,
+              "points": 3,
               "max": 4,
               "comment": ""
             },
             {
               "title": "Faire preuve d'une attitude adéquate (manière de parler, ponctualité, niveau de préparation)",
-              "points": 4,
+              "points": 3,
               "max": 4,
               "comment": ""
             },
             {
               "title": "Gérer le temps imparti à l'exposé oral",
-              "points": 4,
+              "points": 3,
               "max": 4,
               "comment": ""
             }
@@ -191,25 +191,25 @@
           "rows": [
             {
               "title": "Structurer son exposé",
-              "points": 4,
+              "points": 2,
               "max": 4,
               "comment": ""
             },
             {
               "title": "Présenter et justifier sa démarche (méthodologie)",
-              "points": 4,
+              "points": 2,
               "max": 4,
               "comment": ""
             },
             {
               "title": "Présenter des diapositives de qualité",
-              "points": 4,
+              "points": 2,
               "max": 4,
               "comment": ""
             },
             {
               "title": "Présenter son travail ou un élément de son travail efficacement",
-              "points": 5,
+              "points": 2,
               "max": 5,
               "comment": ""
             },
@@ -234,13 +234,13 @@
           ]
         }
       ],
-      "points": 37,
+      "points": 23,
       "pointsMax": 50,
       "presence": 10,
       "presenceMax": 10,
-      "total": 47,
+      "total": 33,
       "totalMax": 60,
-      "grade": "4.7"
+      "grade": "3.3"
     },
     {
       "role": "Expert·e",
@@ -251,31 +251,31 @@
           "rows": [
             {
               "title": "S'exprimer de façon maîtrisée en s'adressant à un auditoire",
-              "points": 4,
+              "points": 3,
               "max": 4,
               "comment": ""
             },
             {
               "title": "Employer un vocabulaire précis et professionnel",
-              "points": 4,
+              "points": 3,
               "max": 4,
               "comment": ""
             },
             {
               "title": "Utiliser le bon ton, faire vivre l'exposé oral",
-              "points": 4,
+              "points": 3,
               "max": 4,
               "comment": ""
             },
             {
               "title": "Faire preuve d'une attitude adéquate (manière de parler, ponctualité, niveau de préparation)",
-              "points": 4,
+              "points": 3,
               "max": 4,
               "comment": ""
             },
             {
               "title": "Gérer le temps imparti à l'exposé oral",
-              "points": 4,
+              "points": 3,
               "max": 4,
               "comment": ""
             }
@@ -287,25 +287,25 @@
           "rows": [
             {
               "title": "Structurer son exposé",
-              "points": 4,
+              "points": 3,
               "max": 4,
               "comment": ""
             },
             {
               "title": "Présenter et justifier sa démarche (méthodologie)",
-              "points": 4,
+              "points": 3,
               "max": 4,
               "comment": ""
             },
             {
               "title": "Présenter des diapositives de qualité",
-              "points": 4,
+              "points": 3,
               "max": 4,
               "comment": ""
             },
             {
               "title": "Présenter son travail ou un élément de son travail efficacement",
-              "points": 4,
+              "points": 3,
               "max": 5,
               "comment": ""
             },
@@ -330,13 +330,13 @@
           ]
         }
       ],
-      "points": 36,
+      "points": 27,
       "pointsMax": 50,
       "presence": 10,
       "presenceMax": 10,
-      "total": 46,
+      "total": 37,
       "totalMax": 60,
-      "grade": "4.6"
+      "grade": "3.7"
     }
   ]
 }

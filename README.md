@@ -4,7 +4,7 @@ Application web francophone pour évaluer les travaux de bachelor. Elle reprend 
 
 ## Démarrage local
 
-Prérequis : Node.js **22.13 ou plus récent** et pnpm **10.34.4**. La base utilise SQLite intégré à Node.js ; aucun serveur de base de données n’est nécessaire.
+Prérequis : Node.js **22.13 ou plus récent**, pnpm **10.34.4** et le binaire **typst 0.14** pour les PDF. `scripts/install-typst.sh ~/.local/bin` l’installe (version épinglée, somme de contrôle vérifiée) ; la variable `TYPST_BIN` permet de désigner un binaire hors du `PATH`. La police Lato (paquet `fonts-lato`) donne le rendu de production ; sans elle, typst retombe sur le DejaVu Sans embarqué. La base utilise SQLite intégré à Node.js ; aucun serveur de base de données n’est nécessaire.
 
 ```sh
 corepack enable
@@ -31,7 +31,9 @@ Ouvrir **http://localhost:3000** ou **http://127.0.0.1:3000** et utiliser l’ac
 6. **Enregistrer** sauvegarde le dossier. Le changement d’onglet conserve la saisie ; la sortie prévient des modifications non enregistrées. Le PDF enregistre d’abord les modifications.
 7. **Verrouiller** exige une pondération à 100 %, toutes les notes et les trois appréciations du protocole. Après confirmation, le dossier est définitivement en lecture seule.
 
-Le bouton **Générer le PDF** télécharge les cinq feuilles A4 : grille principale, protocole, deux évaluations orales et grille étudiant. La première page réunit les notes, les cases de décision, l’échelle d’évaluation, la diffusion, les remarques et les signatures. Le logo HEIG-VD reste vectoriel, placé à 1,5 cm des bords supérieur et gauche ; toutes les pages ont des marges de 1,5 cm sur les quatre côtés. Les textes trop longs sont conservés intégralement dans des annexes numérotées, avec un renvoi sur la feuille concernée. Le bouton **PDF étudiant·e**, disponible en haut de l’évaluation, exporte la feuille indépendante « Travail de Bachelor » et ses éventuelles annexes. Cette feuille ne présente ni décisions du jury, ni diffusion, ni numéro de page ; seules les félicitations apparaissent lorsqu’elles sont accordées. Elle est également jointe au dossier complet, en dehors de sa pagination. Les brouillons portent la mention « Brouillon » ; les documents verrouillés portent la date et la version. Le verrouillage n’est pas une signature électronique.
+Le bouton **Générer le PDF** télécharge les cinq feuilles A4 : grille principale, protocole, deux évaluations orales et grille étudiant. La première page réunit les notes, les cases de décision, l’échelle d’évaluation, la diffusion, les remarques et les signatures ; le protocole et les grilles individuelles ne sont pas signés. Les PDF sont composés par [Typst](https://typst.app) à partir du modèle `typst/evaluation.typ`, qui ne fait que mettre en page des valeurs déjà calculées par `shared/evaluation.ts`. Le logo HEIG-VD reste vectoriel et en rouge, placé à 1,5 cm des bords supérieur et gauche ; toutes les pages ont des marges de 1,5 cm sur les quatre côtés. Les notes insuffisantes (inférieures à 4.0) sont en rouge. Les textes longs sont conservés intégralement : les encadrés grandissent et se poursuivent sur la page suivante, et les feuilles du jury sont numérotées « Page n sur N » en conséquence. Le bouton **PDF étudiant·e**, disponible en haut de l’évaluation, exporte la feuille indépendante « Travail de Bachelor ». Cette feuille ne présente ni décisions du jury, ni diffusion, ni numéro de page ; seules les félicitations apparaissent lorsqu’elles sont accordées. Elle est également jointe au dossier complet, en dehors de sa pagination. Les brouillons portent la mention « Brouillon » ; les documents verrouillés portent la date et la version. Le verrouillage n’est pas une signature électronique.
+
+Pour retoucher le modèle sans passer par l’application : `pnpm pdf:data` exporte un jeu de données d’exemple vers `typst/exemple.json`, puis `pnpm pdf:typst` compile `typst/exemple.pdf`. Voir `typst/README.md`.
 
 ## Règles de calcul et correspondance Excel
 
@@ -93,7 +95,7 @@ pnpm start
 
 En production, `PUBLIC_URL` doit être en HTTPS. Placer l’application derrière un reverse proxy HTTPS. Par défaut, elle écoute uniquement sur `127.0.0.1:3000`. Le proxy doit transmettre le chemin et le header `Origin` sans les réécrire. `HOST=0.0.0.0` permet une écoute dans un conteneur.
 
-Un `Dockerfile` et `compose.yml` sont fournis : après configuration du `.env` de production, lancer `docker compose up -d --build`. Le port du conteneur est exposé sur la boucle locale, pour le reverse proxy. Le volume `evaluations` conserve la base ; ne pas utiliser `docker compose down -v` si les dossiers doivent être conservés. Le conteneur s’exécute sans privilèges root.
+Un `Dockerfile` et `compose.yml` sont fournis : après configuration du `.env` de production, lancer `docker compose up -d --build`. L’image embarque le binaire typst et la police Lato. Le port du conteneur est exposé sur la boucle locale, pour le reverse proxy. Le volume `evaluations` conserve la base ; ne pas utiliser `docker compose down -v` si les dossiers doivent être conservés. Le conteneur s’exécute sans privilèges root.
 
 SQLite conserve utilisateurs, sessions, états OpenID temporaires et dossiers dans `data/evaluations.sqlite` (paramètre `DATABASE_PATH`). Prévoir des sauvegardes de ce volume. Arrêter l’application avant une copie de fichiers, ou utiliser l’API de sauvegarde SQLite pour une copie cohérente à chaud. SQLite utilise le mode WAL : une copie à chaud du seul fichier principal ne suffit pas. Cette version est prévue pour une instance de serveur, sur un volume local persistant.
 
@@ -101,7 +103,7 @@ Les écritures utilisent un numéro de version pour éviter qu’un deuxième on
 
 ## Vérifications
 
-Les tests de mise en page PDF utilisent `pdftotext` (paquet système `poppler-utils` sur Debian/Ubuntu). Cet outil n’est pas nécessaire pour servir l’application ni générer les PDF.
+Les tests de mise en page PDF compilent de vrais PDF avec `typst`, puis les relisent avec `pdftotext` (paquet système `poppler-utils` sur Debian/Ubuntu). Poppler n’est pas nécessaire pour servir l’application ni générer les PDF.
 
 ```sh
 pnpm typecheck
@@ -119,8 +121,9 @@ Le raccordement au véritable fournisseur institutionnel doit être validé avec
 
 - `shared/` : grille extraite, schémas de validation et calculs communs au navigateur et au serveur.
 - `src/` : interface React et styles.
-- `server/` : API Fastify, authentification, SQLite et génération PDF.
+- `server/` : API Fastify, authentification, SQLite et génération PDF (`pdf-data.ts` prépare les données, `pdf.ts` appelle typst).
+- `typst/` : modèle Typst des PDF et jeu de données d’exemple.
 - `tests/` : tests unitaires, API, fournisseur OpenID local et parcours Playwright.
-- `assets/fonts/` : polices DejaVu embarquées pour les caractères français dans les PDF ; licence jointe.
+- `assets/fonts/` : police DejaVu Sans de repli pour les PDF, utilisée quand Lato n’est pas installée ; licence jointe.
 
 Les dossiers existants restent compatibles : les anciennes notes expert des critères 1 et 2 et les anciens commentaires globaux oraux sont conservés dans les données, mais ne sont plus affichés ni utilisés dans les calculs ou les PDF. Aucune migration ni réinitialisation de la base n’est nécessaire.

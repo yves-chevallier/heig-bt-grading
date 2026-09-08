@@ -20,7 +20,7 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "pdf:data": "node --import tsx scripts/typst-data.mjs > typst/exemple.json",
-    "pdf:typst": "typst compile --root . typst/evaluation.typ typst/evaluation.pdf",
+    "pdf:typst": "typst compile --root . --font-path assets/fonts typst/exemple.typ typst/exemple.pdf",
     "admin:password": "node scripts/hash-password.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
@@ -32,7 +32,6 @@
     "fastify": "^5.9.0",
     "lucide-react": "^1.23.0",
     "openid-client": "^6.8.4",
-    "pdfkit": "^0.17.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "tsx": "^4.23.0",
@@ -41,7 +40,6 @@
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "@types/node": "^22.19.0",
-    "@types/pdfkit": "^0.17.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.4",

@@ -10,9 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      # tests/pdf.test.ts relit le PDF produit avec pdftotext : sans Poppler, il
-      # ne vérifie rien du tout (le runner ne l'a pas d'origine).
-      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends poppler-utils
+      # Les PDF sont compilés par le binaire typst (même version que l'image de
+      # production, via le même script) avec la police Lato ; tests/pdf.test.ts
+      # relit ensuite le PDF produit avec pdftotext, que le runner n'a pas
+      # d'origine.
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends poppler-utils fonts-lato
+      - run: sudo scripts/install-typst.sh /usr/local/bin
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
         with:

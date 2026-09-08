@@ -203,6 +203,8 @@ un 302 dont le `location` peut être appelé directement.
 - **RAM** : 956 Mio pour les deux services (453 Mio avant le redimensionnement),
   plus 2 Gio de swap. tb (SQLite, un seul processus Node) est léger, mais toute
   nouvelle dépendance lourde se paierait sur le Postgres de heig-classroom.
+  Chaque PDF lance un processus `typst` embarqué dans l'image (~45 Mio, 0,4 s),
+  qui disparaît aussitôt.
 - **Redémarrage de Caddy** : `systemctl reload caddy` recharge les deux vhosts.
   Toujours `caddy validate` avant : une erreur de syntaxe dans `tb.caddy`
   empêcherait aussi heig-classroom de recharger sa configuration.

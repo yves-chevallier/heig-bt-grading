@@ -283,7 +283,13 @@ export async function createApp(
       const evaluation = store.get(req.user!.id, req.params.id);
       if (!evaluation) return reply.code(404).send({ error: 'Évaluation introuvable.' });
       const student = req.query.view === 'student';
-      const pdf = await renderPdf(evaluation, student);
+      let pdf: Buffer;
+      try {
+        pdf = await renderPdf(evaluation, student);
+      } catch (err) {
+        req.log.error(err, 'génération du PDF');
+        return reply.code(500).send({ error: 'La génération du PDF a échoué.' });
+      }
       const filename =
         `evaluation-${evaluation.data.lastName}-${evaluation.data.firstName}${student ? '-etudiant' : ''}.pdf`
           .normalize('NFD')
