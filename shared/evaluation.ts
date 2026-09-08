@@ -1,9 +1,17 @@
 import { z } from 'zod';
 import rubric from './rubric.json' with { type: 'json' };
 export const { criteria, oralCriteria, programs, orientations } = rubric;
-// Display historical ELCI records under the current program code without rewriting the database.
-export const programCode = (value: string) =>
-  value.trim().toUpperCase() === 'ELCI' ? 'GE' : value;
+// Affiche les enregistrements historiques sous le code de filière courant sans
+// réécrire la base. Chaque paire désigne la même filière, renommée depuis :
+// ELCI -> GE, et les codes hérités du classeur Excel vers ceux du référentiel
+// officiel (l'intitulé de la filière est identique de part et d'autre).
+const renamedPrograms: Record<string, string> = {
+  ELCI: 'GE',
+  ENTE: 'ETE',
+  MTEC: 'MT',
+  SYND: 'SI',
+};
+export const programCode = (value: string) => renamedPrograms[value.trim().toUpperCase()] ?? value;
 export const hasExpertGrade = (criterionIndex: number) => criterionIndex >= 2;
 const requiredMarks = criteria.length + criteria.filter((_, i) => hasExpertGrade(i)).length;
 export const protocolFields = [

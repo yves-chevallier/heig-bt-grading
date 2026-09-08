@@ -108,54 +108,147 @@
   ],
   "programs": [
     {
-      "code": "ENTE",
+      "code": "EE",
+      "label": "Économie d'entreprise"
+    },
+    {
+      "code": "ETE",
       "label": "Énergie et techniques environnementales"
     },
     {
       "code": "GE",
-      "label": "Génie Électrique"
+      "label": "Génie électrique"
     },
     {
-      "code": "MTEC",
+      "code": "MT",
       "label": "Microtechniques"
     },
     {
-      "code": "SYND",
+      "code": "SI",
       "label": "Systèmes industriels"
+    },
+    {
+      "code": "IGI",
+      "label": "Ingénierie et gestion industrielles"
+    },
+    {
+      "code": "ISC",
+      "label": "Informatique et systèmes de communication"
+    },
+    {
+      "code": "GTE",
+      "label": "Génie territorial"
+    },
+    {
+      "code": "GCOM",
+      "label": "Ingénierie des médias"
     }
   ],
   "orientations": [
     {
-      "code": "EBA",
-      "label": "Énergétique du bâtiment"
+      "code": "EE",
+      "label": "Économie d'entreprise",
+      "program": "EE"
     },
     {
-      "code": "THI",
-      "label": "Thermique industrielle"
+      "code": "ETE",
+      "label": "Tronc commun",
+      "program": "ETE"
     },
     {
-      "code": "THO",
-      "label": "Thermotronique"
+      "code": "OEBA",
+      "label": "Option Énergétique du bâtiment",
+      "program": "ETE"
+    },
+    {
+      "code": "OTHI",
+      "label": "Option Thermique industrielle",
+      "program": "ETE"
     },
     {
       "code": "EAI",
-      "label": "Électronique et Automatisation industrielle"
+      "label": "Électronique et automatisation industrielle",
+      "program": "GE"
     },
     {
       "code": "EEM",
-      "label": "Électronique embarquée et Mécatronique"
+      "label": "Électronique embarquée et mécatronique",
+      "program": "GE"
     },
     {
       "code": "EN",
-      "label": "Systèmes énergétiques"
+      "label": "Systèmes énergétiques",
+      "program": "GE"
     },
     {
-      "code": "MI",
-      "label": "Mécatronique"
+      "code": "ROCM",
+      "label": "Robotique et conception microtechnique",
+      "program": "MT"
     },
     {
-      "code": "SIC",
-      "label": "Conception"
+      "code": "SICP",
+      "label": "Conception de machines",
+      "program": "SI"
+    },
+    {
+      "code": "IGIS",
+      "label": "Ingénierie et gestion industrielles",
+      "program": "IGI"
+    },
+    {
+      "code": "IGQP",
+      "label": "Qualité et performances industrielles",
+      "program": "IGI"
+    },
+    {
+      "code": "ISCD",
+      "label": "Ingénierie des données",
+      "program": "ISC"
+    },
+    {
+      "code": "ISCE",
+      "label": "Systèmes informatiques embarqués",
+      "program": "ISC"
+    },
+    {
+      "code": "ISCL",
+      "label": "Informatique logicielle",
+      "program": "ISC"
+    },
+    {
+      "code": "ISCR",
+      "label": "Réseaux et systèmes",
+      "program": "ISC"
+    },
+    {
+      "code": "ISCS",
+      "label": "Sécurité informatique",
+      "program": "ISC"
+    },
+    {
+      "code": "GTE",
+      "label": "Tronc commun",
+      "program": "GTE"
+    },
+    {
+      "code": "GEAT",
+      "label": "Aménagement du territoire",
+      "program": "GTE"
+    },
+    {
+      "code": "GEIE",
+      "label": "Infrastructures et enjeux climatiques",
+      "program": "GTE"
+    },
+    {
+      "code": "GEMF",
+      "label": "Géomatique et maîtrise foncière",
+      "program": "GTE"
+    },
+    {
+      "code": "GCOM",
+      "label": "Ingénierie des médias",
+      "program": "GCOM"
     }
   ]
 }

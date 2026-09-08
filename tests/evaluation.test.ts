@@ -8,6 +8,8 @@ import {
   oralGrade,
   roundTenth,
   programCode,
+  programs,
+  orientations,
 } from '../shared/evaluation';
 import { complete, draft, roundingExample } from './fixtures';
 describe('Barème du classeur', () => {
@@ -132,4 +134,48 @@ it('corrige le code ELCI à l’affichage et au prochain enregistrement, sans mo
   expect(programCode(historical.program)).toBe('GE');
   expect(evaluationSchema.parse(historical).program).toBe('GE');
   expect(historical.program).toBe('ELCI');
+});
+
+it.each([
+  ['ENTE', 'ETE'],
+  ['MTEC', 'MT'],
+  ['SYND', 'SI'],
+])('affiche le code hérité %s sous le code officiel %s', (historique, officiel) => {
+  const record = draft();
+  record.program = historique;
+  expect(programCode(record.program)).toBe(officiel);
+  expect(record.program).toBe(historique);
+});
+
+it('laisse intact un code inconnu plutôt que de le réécrire', () => {
+  // Une évaluation peut porter une filière saisie à la main : elle doit
+  // s'afficher telle quelle, pas disparaître derrière un code inventé.
+  expect(programCode('XYZ')).toBe('XYZ');
+  expect(programCode('')).toBe('');
+});
+
+describe('référentiel des filières et orientations', () => {
+  it('ne contient pas de code de filière en double', () => {
+    const codes = programs.map((p) => p.code);
+    expect(new Set(codes).size).toBe(codes.length);
+  });
+
+  it('rattache chaque orientation à une filière existante', () => {
+    const codes = new Set(programs.map((p) => p.code));
+    const orphelines = orientations.filter((o) => !codes.has(o.program));
+    expect(orphelines.map((o) => o.code)).toEqual([]);
+  });
+
+  it('donne à chaque filière au moins une orientation', () => {
+    const rattachees = new Set(orientations.map((o) => o.program));
+    const sansOrientation = programs.filter((p) => !rattachees.has(p.code));
+    expect(sansOrientation.map((p) => p.code)).toEqual([]);
+  });
+
+  it('ne propose aucun code de filière que programCode réécrirait', () => {
+    // Un code hérité laissé dans la liste serait proposé à la saisie puis
+    // aussitôt réaffiché sous un autre code : incohérent pour l'utilisateur.
+    const reecrits = programs.filter((p) => programCode(p.code) !== p.code);
+    expect(reecrits.map((p) => p.code)).toEqual([]);
+  });
 });
