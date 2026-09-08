@@ -66,7 +66,7 @@ Le fournisseur est découvert à la première connexion. Le flux reprend celui d
 Enregistrer un client dédié auprès du fournisseur et autoriser exactement cette URI de retour :
 
 ```text
-https://votre-domaine/auth/callback
+https://votre-domaine/app/auth/callback
 ```
 
 Configurer `.env` :

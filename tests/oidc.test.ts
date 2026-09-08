@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createServer, type Server } from 'node:http';
 import { createHash, generateKeyPairSync, sign } from 'node:crypto';
 import { createApp } from '../server/app';
+import { oidcCallbackPath } from '../server/oidc';
 import { testConfig } from './fixtures';
 describe('OpenID Authorization Code + PKCE avec fournisseur de test', () => {
   let issuer: Server, issuerUrl: string, app: Awaited<ReturnType<typeof createApp>>;
@@ -117,7 +118,10 @@ describe('OpenID Authorization Code + PKCE avec fournisseur de test', () => {
     expect(response.statusCode).toBe(302);
     const url = new URL(response.headers.location!);
     expect(url.searchParams.get('code_challenge_method')).toBe('S256');
-    expect(url.searchParams.get('redirect_uri')).toBe('http://localhost:3000/auth/callback');
+    // Valeur littérale volontairement : c'est la redirect URI enregistrée dans
+    // l'AAI Resource Registry, qu'edu-ID compare exactement. La comparer à
+    // oidcCallbackPath ne prouverait rien, le test suivrait la constante.
+    expect(url.searchParams.get('redirect_uri')).toBe('http://localhost:3000/app/auth/callback');
     const code = crypto.randomUUID();
     grants.set(code, {
       nonce: url.searchParams.get('nonce')!,
@@ -133,7 +137,7 @@ describe('OpenID Authorization Code + PKCE avec fournisseur de test', () => {
   it('authentifie le sujet, récupère userinfo et crée une session utilisateur', async () => {
     const flow = await begin();
     const response = await app.inject({
-      url: `/auth/callback?code=${flow.code}&state=${flow.state}`,
+      url: `${oidcCallbackPath}?code=${flow.code}&state=${flow.state}`,
       headers: { cookie: flow.cookie },
     });
     expect(response.headers.location).toBe('/');
@@ -150,7 +154,7 @@ describe('OpenID Authorization Code + PKCE avec fournisseur de test', () => {
     });
     expect(JSON.stringify(me.json())).not.toContain('test-access-token');
     const replay = await app.inject({
-      url: `/auth/callback?code=${flow.code}&state=${flow.state}`,
+      url: `${oidcCallbackPath}?code=${flow.code}&state=${flow.state}`,
       headers: { cookie: flow.cookie },
     });
     expect(replay.headers.location).toBe('/?authError=expired');
@@ -158,7 +162,7 @@ describe('OpenID Authorization Code + PKCE avec fournisseur de test', () => {
   it('refuse un state différent', async () => {
     const flow = await begin();
     const response = await app.inject({
-      url: `/auth/callback?code=${flow.code}&state=wrong`,
+      url: `${oidcCallbackPath}?code=${flow.code}&state=wrong`,
       headers: { cookie: flow.cookie },
     });
     expect(response.headers.location).toBe('/?authError=failed');
@@ -172,7 +176,7 @@ describe('OpenID Authorization Code + PKCE avec fournisseur de test', () => {
   ])('refuse les claims invalides %j', async (override) => {
     const flow = await begin(override);
     const response = await app.inject({
-      url: `/auth/callback?code=${flow.code}&state=${flow.state}`,
+      url: `${oidcCallbackPath}?code=${flow.code}&state=${flow.state}`,
       headers: { cookie: flow.cookie },
     });
     expect(response.headers.location).toBe('/?authError=failed');

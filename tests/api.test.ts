@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../server/app';
+import { oidcCallbackPath } from '../server/oidc';
 import { Store } from '../server/store';
 import { complete, draft, password, testConfig } from './fixtures';
 import type { EvaluationRecord } from '../shared/evaluation';
@@ -234,7 +235,7 @@ describe('API et protection des dossiers', () => {
     expect(store.consumeOAuth(token)).toBeNull();
   });
   it('refuse un callback sans état de connexion et ne crée aucune session', async () => {
-    const result = await app.inject('/auth/callback?code=forged&state=forged');
+    const result = await app.inject(`${oidcCallbackPath}?code=forged&state=forged`);
     expect(result.statusCode).toBe(302);
     expect(result.headers.location).toBe('/?authError=expired');
     expect(result.cookies.some((c) => c.name === 'session')).toBe(false);

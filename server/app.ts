@@ -6,7 +6,7 @@ import { promisify } from 'node:util';
 import { z } from 'zod';
 import type { Config } from './config';
 import { Store } from './store';
-import { OidcProvider } from './oidc';
+import { OidcProvider, oidcCallbackPath } from './oidc';
 import {
   evaluationSchema,
   lockingIssues,
@@ -16,6 +16,12 @@ import {
 } from '../shared/evaluation';
 import { expertInput, expertInputSchema, type ExpertEvaluation } from '../shared/expert';
 import { renderPdf } from './pdf';
+
+// Routes servies par le serveur, par opposition aux routes de navigation de la
+// SPA : jamais mises en cache, et 404 JSON plutôt que repli sur index.html.
+// Le callback OIDC en fait partie sans être sous /auth/ (voir oidc.ts).
+export const isServerRoute = (url: string) =>
+  url.startsWith('/api/') || url.startsWith('/auth/') || url.startsWith(oidcCallbackPath);
 const scrypt = promisify(scryptCallback);
 const expertRevision = (record: EvaluationRecord) =>
   createHash('sha256')
@@ -80,8 +86,7 @@ export async function createApp(
       .header('Referrer-Policy', 'no-referrer')
       .header('X-Frame-Options', 'DENY');
     if (secure) reply.header('Strict-Transport-Security', 'max-age=31536000');
-    if (req.url.startsWith('/api/') || req.url.startsWith('/auth/'))
-      reply.header('Cache-Control', 'no-store');
+    if (isServerRoute(req.url)) reply.header('Cache-Control', 'no-store');
     if (config.NODE_ENV === 'production')
       reply.header(
         'Content-Security-Policy',
@@ -167,7 +172,7 @@ export async function createApp(
       return reply.redirect('/?authError=unavailable');
     }
   });
-  app.get('/auth/callback', async (req, reply) => {
+  app.get(oidcCallbackPath, async (req, reply) => {
     const stash = store.consumeOAuth(req.cookies.oauth);
     reply.clearCookie('oauth', cookieOptions);
     if (!stash) return reply.redirect('/?authError=expired');

@@ -3,6 +3,12 @@ import { createPrivateKey } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import * as oidc from 'openid-client';
 import type { Config } from './config';
+// Chemin du callback OIDC. Il est imposé par l'AAI Resource Registry, qui a
+// enregistré la redirect URI sous /app/ (convention héritée de
+// heig-classroom) : edu-ID compare la valeur exacte et refuse tout autre
+// chemin par « InvalidRedirectionURI ». Les autres routes d'authentification
+// restent sous /auth/, d'où les préfixes doubles côté serveur.
+export const oidcCallbackPath = '/app/auth/callback';
 export class OidcProvider {
   private config: oidc.Configuration | null = null;
   constructor(private app: Config) {}
@@ -39,7 +45,7 @@ export class OidcProvider {
       state = oidc.randomState(),
       nonce = oidc.randomNonce();
     const url = oidc.buildAuthorizationUrl(config, {
-      redirect_uri: new URL('/auth/callback', this.app.PUBLIC_URL).href,
+      redirect_uri: new URL(oidcCallbackPath, this.app.PUBLIC_URL).href,
       scope: 'openid profile email',
       code_challenge: await oidc.calculatePKCECodeChallenge(codeVerifier),
       code_challenge_method: 'S256',
