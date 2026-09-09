@@ -14,6 +14,17 @@ tb.chevallier.io {
 		Referrer-Policy "strict-origin-when-cross-origin"
 	}
 
+	# Flux SSE des changements d'évaluation : sans flush_interval -1, Caddy met
+	# la réponse en tampon et les événements n'arrivent que par paquets — le
+	# « temps réel » se transforme en attente de plusieurs secondes.
+	handle /api/events {
+		reverse_proxy localhost:3001 {
+			flush_interval -1
+		}
+	}
+
 	# 3000 est pris par heig-classroom ; tb écoute sur 3001 (loopback).
-	reverse_proxy localhost:3001
+	handle {
+		reverse_proxy localhost:3001
+	}
 }

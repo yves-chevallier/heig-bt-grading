@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ArrowLeft,
   Check,
@@ -11,7 +11,8 @@ import {
   LockKeyhole,
   MessageSquareText,
   Pencil,
-  Save,
+  RefreshCw,
+  TriangleAlert,
   UserRound,
   Users,
   X,
@@ -33,6 +34,8 @@ import {
   type Oral,
 } from '../shared/evaluation';
 import { api, ApiError, fetchPdf } from './api';
+import { useLiveUpdates } from './live';
+import { HelpIcon } from './help';
 import { IdentityFields, Modal, NumberField, TextArea } from './components';
 type Tab = 'grid' | 'protocol' | 'teacher' | 'expert';
 const tabs = [
@@ -58,6 +61,11 @@ export function Editor({
   const [modal, setModal] = useState<'identity' | 'lock' | 'leave' | null>(null);
   const [shareUrl, setShareUrl] = useState('');
   const [conflict, setConflict] = useState(false);
+  const [saving, setSaving] = useState(false);
+  // Raison pour laquelle l'enregistrement automatique est en attente : la
+  // saisie ne satisfait pas encore le schéma (champ obligatoire vidé,
+  // pondération au-delà de 100 %…). Inutile d'appeler le serveur pour ça.
+  const [pending, setPending] = useState('');
   const dirty = JSON.stringify(data) !== JSON.stringify(record.data),
     locked = !!record.lockedAt,
     result = calculate(data);
@@ -76,32 +84,60 @@ export function Editor({
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
   }, [dirty]);
-  useEffect(() => {
-    // Refresh a clean editor so newly submitted expert notes are visible before validation.
-    if (dirty || locked) return;
-    let active = true;
-    async function refresh() {
-      if (busyRef.current) return;
-      try {
-        const fresh = await api<EvaluationRecord>(`/api/evaluations/${record.id}`);
-        if (active && !busyRef.current && fresh.version !== record.version) {
-          setData(fresh.data);
-          updated(fresh);
-          setNotice('Évaluation actualisée avec les dernières modifications.');
-        }
-      } catch {
-        /* The next refresh or explicit action can retry. */
+  // Le flux SSE remplace l'ancien sondage toutes les 10 s : une modification de
+  // l'expert apparaît immédiatement. Une vue en cours de saisie n'est jamais
+  // écrasée — on ne recharge que si rien n'est en attente localement.
+  const dirtyRef = useRef(false);
+  dirtyRef.current = dirty;
+  const refresh = useCallback(async () => {
+    if (dirtyRef.current || busyRef.current || locked) return;
+    try {
+      const fresh = await api<EvaluationRecord>(`/api/evaluations/${record.id}`);
+      if (dirtyRef.current || busyRef.current) return;
+      if (fresh.version !== record.version) {
+        setData(fresh.data);
+        updated(fresh);
+        setNotice('Évaluation actualisée avec les dernières modifications.');
       }
+    } catch {
+      /* la prochaine notification, ou le retour au premier plan, réessaiera */
     }
-    void refresh();
-    const timer = window.setInterval(refresh, 10000);
-    window.addEventListener('focus', refresh);
-    return () => {
-      active = false;
-      clearInterval(timer);
-      window.removeEventListener('focus', refresh);
-    };
-  }, [dirty, locked, record.id, record.version]);
+  }, [locked, record.id, record.version, updated]);
+  useLiveUpdates(!locked, refresh);
+  // Enregistrement automatique : il n'y a plus de bouton. On attend une pause
+  // dans la saisie, et on ne sollicite pas le serveur tant que les données sont
+  // invalides — sinon vider un champ obligatoire provoquerait une erreur à
+  // chaque frappe.
+  useEffect(() => {
+    if (!dirty || locked) return;
+    const parsed = evaluationSchema.safeParse(data);
+    if (!parsed.success) {
+      setPending(parsed.error.issues.map((i) => i.message).join(' '));
+      return;
+    }
+    setPending('');
+    const timer = window.setTimeout(async () => {
+      if (busyRef.current) return;
+      busyRef.current = true;
+      setSaving(true);
+      try {
+        const saved = await api<EvaluationRecord>(`/api/evaluations/${record.id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ version: record.version, data: parsed.data }),
+        });
+        setData(saved.data);
+        updated(saved);
+        setError('');
+      } catch (e) {
+        setError((e as Error).message);
+        if (e instanceof ApiError && e.status === 409) setConflict(true);
+      } finally {
+        busyRef.current = false;
+        setSaving(false);
+      }
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [data, dirty, locked, record.id, record.version, updated]);
   async function save(lock = false): Promise<EvaluationRecord | null> {
     const parsed = evaluationSchema.safeParse(data);
     if (!parsed.success) {
@@ -153,11 +189,22 @@ export function Editor({
       setNotice('PDF généré et téléchargé.');
     });
   }
+  // L'enregistrement automatique attend une pause de 800 ms : quitter juste
+  // après une frappe annulerait ce délai et perdrait la modification. On
+  // enregistre donc avant de sortir, sauf si la saisie est invalide — auquel
+  // cas on prévient plutôt que de perdre silencieusement.
+  const leave = () => {
+    if (pending) return setModal('leave');
+    if (!dirty) return back();
+    void action(async () => {
+      if (await save()) back();
+    });
+  };
   const issues = lockingIssues(data);
   return (
     <main className="main editor">
       <div className="breadcrumb">
-        <button onClick={() => (dirty ? setModal('leave') : back())}>
+        <button onClick={leave}>
           <ArrowLeft size={14} /> Mes évaluations
         </button>
         <ChevronRight size={12} />
@@ -202,6 +249,7 @@ export function Editor({
               <Copy size={16} /> Copier le lien expert
             </button>
           )}
+          {!locked && <HelpIcon topic="expertLink" />}
           <button disabled={busy} onClick={() => pdf()}>
             <Download size={16} />
             {busy ? 'Traitement…' : 'Générer le PDF'}
@@ -210,19 +258,31 @@ export function Editor({
             <Download size={16} /> PDF étudiant·e
           </button>
           {!locked && (
-            <button
-              className="primary"
-              disabled={!dirty || busy}
-              onClick={() =>
-                action(async () => {
-                  await save();
-                })
-              }
+            <span
+              className={`save-state${pending ? ' pending' : ''}`}
+              aria-live="polite"
+              title={pending || undefined}
             >
-              <Save size={16} />
-              {busy ? 'Enregistrement…' : 'Enregistrer'}
-            </button>
+              {saving ? (
+                <>
+                  <RefreshCw size={14} className="spin" /> Enregistrement…
+                </>
+              ) : pending ? (
+                <>
+                  <TriangleAlert size={14} /> Non enregistré
+                </>
+              ) : dirty ? (
+                <>
+                  <RefreshCw size={14} /> Modifications en attente
+                </>
+              ) : (
+                <>
+                  <Check size={14} /> Enregistré
+                </>
+              )}
+            </span>
           )}
+          {!locked && <HelpIcon topic="autosave" />}
         </div>
       </div>
       <section className="card identity-strip">
@@ -420,7 +480,9 @@ export function Editor({
             </span>
             <div className="grade-divider" />
             <div className="summary-row">
-              <span>Pondération totale</span>
+              <span>
+                Pondération totale <HelpIcon topic="weights" />
+              </span>
               <strong className={result.totalWeight === 100 ? 'green' : 'amber'}>
                 {result.totalWeight} / 100 %
               </strong>
@@ -449,7 +511,9 @@ export function Editor({
             )}
           </section>
           <section className="card checklist">
-            <h3>Finaliser l’évaluation</h3>
+            <h3>
+              Finaliser l’évaluation <HelpIcon topic="locking" />
+            </h3>
             <CheckItem done={result.totalWeight === 100}>Pondération à 100 %</CheckItem>
             <CheckItem done={result.filled === result.requiredMarks}>
               Notes et grilles orales complètes
@@ -552,26 +616,18 @@ export function Editor({
       )}
       {modal === 'leave' && (
         <Modal title="Modifications non enregistrées" close={() => setModal(null)}>
-          <p>Enregistrez vos modifications avant de revenir à la liste des évaluations.</p>
-          {error && (
-            <div className="alert error" role="alert">
-              {error}
-            </div>
-          )}
+          <p>
+            L’enregistrement est automatique, mais ces modifications ne peuvent pas être
+            enregistrées en l’état :
+          </p>
+          <p className="modal-detail">{pending}</p>
+          <p>Corrigez-les pour qu’elles soient conservées, ou quittez en les abandonnant.</p>
           <div className="modal-actions">
             <button disabled={busy} onClick={back}>
               Quitter sans enregistrer
             </button>
-            <button
-              className="primary"
-              disabled={busy}
-              onClick={() =>
-                action(async () => {
-                  if (await save()) back();
-                })
-              }
-            >
-              Enregistrer et quitter
+            <button className="primary" disabled={busy} onClick={() => setModal(null)}>
+              Corriger
             </button>
           </div>
         </Modal>
@@ -627,10 +683,14 @@ function Grid({
             <thead>
               <tr>
                 <th>Critères d’évaluation</th>
-                <th>Pondération</th>
+                <th>
+                  Pondération <HelpIcon topic="weights" />
+                </th>
                 <th>Enseignant·e</th>
                 <th>Expert·e</th>
-                <th>Note finale</th>
+                <th>
+                  Note finale <HelpIcon topic="finalGrade" />
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -815,7 +875,8 @@ export function OralGrid({
       />
       <div className="oral-summary">
         <span>
-          Points saisis <strong>{Number(total.toFixed(1))} / 50</strong>
+          Points saisis <strong>{Number(total.toFixed(1))} / 50</strong>{' '}
+          <HelpIcon topic="oralGrid" />
         </span>
         <span>
           Présence <strong>+ 10 points</strong>

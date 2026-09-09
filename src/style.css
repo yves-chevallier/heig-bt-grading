@@ -111,15 +111,21 @@ button.primary:hover,
   background: #981c21;
   border-color: #981c21;
 }
-button.icon-button {
+/* Sur la classe et non sur l'élément : le lien vers le dépôt est un <a>, qui
+   sans cela garderait la couleur et le soulignement des liens. */
+.icon-button {
   border: 0;
   background: transparent;
   padding: 8px;
   min-height: 34px;
   flex-shrink: 0;
   color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
 }
-button.icon-button:hover {
+.icon-button:hover {
   background: var(--surface-alt);
   color: var(--text);
 }
@@ -282,14 +288,11 @@ label.field {
   font-weight: 650;
 }
 .logo {
-  height: 38px;
-  width: 38px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: #b41f24;
-  border-radius: 10px;
-  color: #fff;
+  /* Le SVG porte déjà le rouge HEIG-VD : pas de pastille de couleur autour,
+     sinon le rouge se superpose au rouge. Rapport du tracé : 1911.5 / 1442. */
+  height: 32px;
+  width: auto;
+  display: block;
   flex-shrink: 0;
 }
 .header-label {
@@ -1288,8 +1291,14 @@ label.field {
   font-size: 16px;
   letter-spacing: -0.4px;
 }
+/* Seul le premier de la série pousse le groupe à droite ; sans la remise à
+   zéro, chaque bouton absorberait sa part de l'espace libre et ils se
+   retrouveraient éparpillés au milieu de la barre. */
 .login-brand > .icon-button {
   margin-left: auto;
+}
+.login-brand > .icon-button ~ .icon-button {
+  margin-left: 0;
 }
 .login-brand strong {
   font-weight: 600;
@@ -1846,4 +1855,115 @@ label.field {
 .expert-marks p {
   font-size: 12px;
   margin: 6px 0 0;
+}
+
+/* Indicateur de l'enregistrement automatique, à la place de l'ancien bouton
+   « Enregistrer ». Discret quand tout va bien, visible quand rien n'est
+   enregistré. */
+.save-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+.save-state.pending {
+  color: var(--red);
+  font-weight: 600;
+}
+.save-state svg {
+  flex-shrink: 0;
+}
+.spin {
+  animation: save-spin 1s linear infinite;
+}
+@keyframes save-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* Respecte le réglage système : une rotation permanente peut gêner. */
+@media (prefers-reduced-motion: reduce) {
+  .spin {
+    animation: none;
+  }
+}
+.modal-detail {
+  color: var(--red);
+  font-size: 13px;
+}
+
+/* Aide contextuelle : « ? » discrets et tiroir latéral (voir help.tsx). */
+.help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  opacity: 0.55;
+  cursor: pointer;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+.help-icon:hover,
+.help-icon:focus-visible {
+  color: var(--red);
+  opacity: 1;
+}
+.help-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+}
+.help-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(340px, 88vw);
+  z-index: 61;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  box-shadow: -8px 0 32px rgb(0 0 0 / 0.12);
+  transform: translateX(100%);
+  transition: transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+.help-drawer.open {
+  transform: translateX(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .help-drawer {
+    transition: none;
+  }
+}
+.help-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.help-head svg {
+  color: var(--red);
+}
+.help-head h2 {
+  font-size: 15px;
+  margin: 0;
+  flex: 1;
+}
+.help-body {
+  padding: 16px;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+.help-body p + p {
+  margin-top: 12px;
 }

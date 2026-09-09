@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react';
 import {
+  Archive,
   ArrowRight,
+  ChevronRight,
+  ClipboardList,
   FileText,
   GraduationCap,
+  ListChecks,
   LockKeyhole,
+  LogIn,
   LogOut,
+  Moon,
   Plus,
   Search,
   ShieldCheck,
   Sun,
-  Moon,
-  CalendarDays,
-  ChevronRight,
 } from 'lucide-react';
 import {
   calculate,
@@ -24,7 +27,7 @@ import {
   type User,
 } from '../shared/evaluation';
 import { api } from './api';
-import { Field, IdentityFields, Logo, Modal } from './components';
+import { Field, GithubLink, IdentityFields, Logo, Modal } from './components';
 import { Editor } from './Editor';
 type Me = { user: User | null; auth: { local: boolean; oidc: boolean } };
 const date = (value: string) => value.split('-').reverse().join('.');
@@ -103,6 +106,7 @@ export function App() {
           </div>
           <span className="header-label">Département TIN</span>
           <div className="header-user">
+            <GithubLink />
             <button
               className="icon-button"
               aria-label="Changer le thème"
@@ -359,39 +363,31 @@ function Login({
       <div className="login-brand">
         <Logo />
         <strong>HEIG Évaluation TB</strong>
+        <GithubLink />
         <button className="icon-button" aria-label="Changer le thème" onClick={toggleTheme}>
           {dark ? <Sun size={18} /> : <Moon size={18} />}
         </button>
       </div>
       <main className="login-layout">
         <div className="login-intro">
-          <span className="eyebrow">TRAVAUX DE BACHELOR · DÉPARTEMENT TIN</span>
-          <h1>
-            Chaque projet mérite
-            <br />
-            une évaluation
-            <br />
-            <em>à sa hauteur.</em>
-          </h1>
-          <p>
-            Vos grilles d’évaluation, le protocole de soutenance et les appréciations du jury,
-            réunis dans un espace commun.
-          </p>
+          <span className="eyebrow">DÉPARTEMENT TIN</span>
+          <h1>Évaluation des travaux de bachelor</h1>
+          <p>Grille d’évaluation, protocole de soutenance et appréciations du jury.</p>
           <div className="login-features">
             <span>
-              <FileText size={18} /> Une grille fidèle à votre pratique
+              <ClipboardList size={18} /> Formulaire pour la soutenance
             </span>
             <span>
-              <CalendarDays size={18} /> Du suivi de projet à la soutenance
+              <ListChecks size={18} /> Suivi des évaluations
             </span>
             <span>
-              <ShieldCheck size={18} /> Des évaluations conservées et verrouillées
+              <Archive size={18} /> Sauvegarde et archives
             </span>
           </div>
         </div>
         <section className="card login-card">
           <span className="login-symbol">
-            <GraduationCap size={28} />
+            <LogIn size={28} />
           </span>
           <h2>Bienvenue</h2>
           <p>Connectez-vous pour retrouver vos évaluations.</p>

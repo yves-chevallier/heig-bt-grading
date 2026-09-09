@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { Save } from 'lucide-react';
+import { Check, RefreshCw, TriangleAlert } from 'lucide-react';
 import { criteria, formatGrade, oralGrade } from '../shared/evaluation';
 import { expertInputSchema, type ExpertEvaluation, type ExpertInput } from '../shared/expert';
 import { api, ApiError } from './api';
 import { Logo, NumberField } from './components';
 import { OralGrid } from './Editor';
+import { HelpIcon } from './help';
 
 export function ExpertEditor() {
   const token = useRef(location.hash.slice(1));
@@ -14,6 +15,8 @@ export function ExpertEditor() {
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
   const [conflict, setConflict] = useState(false);
+  // Raison d'un enregistrement automatique en attente (saisie invalide).
+  const [pending, setPending] = useState('');
   const busyRef = useRef(false);
   const dirtyRef = useRef(false);
   const dirty = !!record && JSON.stringify(data) !== JSON.stringify(record.data);
@@ -74,6 +77,22 @@ export function ExpertEditor() {
       window.removeEventListener('focus', refresh);
     };
   }, [!!record, locked]);
+  // Enregistrement automatique : plus de bouton. Comme côté enseignant·e, on
+  // attend une pause dans la saisie et on ne sollicite pas le serveur tant que
+  // les points saisis ne sont pas valides.
+  useEffect(() => {
+    if (!record || !data || locked || !dirty) return;
+    if (!expertInputSchema.safeParse(data).success) {
+      setPending('Vérifiez les notes et les points saisis.');
+      return;
+    }
+    setPending('');
+    const timer = window.setTimeout(() => void save(), 800);
+    return () => clearTimeout(timer);
+    // `save` lit les valeurs à jour via les états ; le relancer à chaque rendu
+    // réarmerait le délai en boucle.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, dirty, locked, record?.revision]);
   function change(patch: Partial<ExpertInput>) {
     dirtyRef.current = true;
     setData((current) => (current ? { ...current, ...patch } : current));
@@ -97,7 +116,6 @@ export function ExpertEditor() {
           body: JSON.stringify({ revision: record.revision, data: parsed.data }),
         }),
       );
-      setNotice('Modifications enregistrées et transmises à l’enseignant·e.');
     } catch (e) {
       setError((e as Error).message);
       if (e instanceof ApiError && e.status === 409) setConflict(true);
@@ -145,10 +163,31 @@ export function ExpertEditor() {
                 <p>{record.identity.title}</p>
               </div>
               {!locked && (
-                <button className="primary" disabled={busy || !dirty} onClick={save}>
-                  <Save size={16} /> {busy ? 'Enregistrement…' : 'Enregistrer'}
-                </button>
+                <span
+                  className={`save-state${pending ? ' pending' : ''}`}
+                  aria-live="polite"
+                  title={pending || undefined}
+                >
+                  {busy ? (
+                    <>
+                      <RefreshCw size={14} className="spin" /> Enregistrement…
+                    </>
+                  ) : pending ? (
+                    <>
+                      <TriangleAlert size={14} /> Non enregistré
+                    </>
+                  ) : dirty ? (
+                    <>
+                      <RefreshCw size={14} /> Modifications en attente
+                    </>
+                  ) : (
+                    <>
+                      <Check size={14} /> Enregistré · transmis à l’enseignant·e
+                    </>
+                  )}
+                </span>
               )}
+              {!locked && <HelpIcon topic="autosave" />}
             </div>
             <section className="card identity-strip">
               <div>
@@ -249,13 +288,6 @@ export function ExpertEditor() {
                 change={(oral) => change({ expertOral: oral })}
               />
             </fieldset>
-            {!locked && (
-              <div className="modal-actions">
-                <button className="primary" disabled={busy || !dirty} onClick={save}>
-                  <Save size={16} /> Enregistrer
-                </button>
-              </div>
-            )}
           </>
         )}
       </main>

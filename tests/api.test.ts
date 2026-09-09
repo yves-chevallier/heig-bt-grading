@@ -218,7 +218,9 @@ describe('API et protection des dossiers', () => {
       expect(response.headers['cache-control']).toBe('no-store');
       expect(response.rawPayload.subarray(0, 5).toString()).toBe('%PDF-');
       // Footer rendering must not accidentally append a blank page per document page.
-      const pages = response.rawPayload.toString('latin1').match(/\/Type \/Page\b/g)?.length ?? 0;
+      // L'espace après /Type est facultatif en PDF : PDFKit en mettait un,
+      // Typst non. \b après « Page » écarte toujours les nœuds /Pages.
+      const pages = response.rawPayload.toString('latin1').match(/\/Type\s*\/Page\b/g)?.length ?? 0;
       expect(pages).toBe(suffix ? 1 : 5);
     }
   });

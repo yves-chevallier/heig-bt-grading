@@ -24,7 +24,9 @@ test('copie le lien, saisit sans connexion et reporte les notes expert jusqu’a
     .getByRole('button', { name: 'Ouvrir l’évaluation de Partage Expert', exact: true })
     .click();
   await page.getByRole('button', { name: 'Copier le lien expert', exact: true }).click();
-  await expect(page.getByRole('status')).toContainText('Lien expert copié');
+  // Ciblage explicite de la zone de notice : les <output> de notes ont un rôle
+  // « status » implicite, si bien que getByRole('status') en désigne plusieurs.
+  await expect(page.locator('.editor-status [role=status]')).toContainText('Lien expert copié');
   const link = await page.evaluate(() => navigator.clipboard.readText());
   expect(link).toMatch(/^http:\/\/localhost:3100\/expert#[A-Za-z0-9_-]{43}$/);
   const context = await browser.newContext();
@@ -61,13 +63,21 @@ test('copie le lien, saisit sans connexion et reporte les notes expert jusqu’a
       .getByRole('textbox', { name: /^Remarques —/ })
       .first()
       .fill('Observation de l’expert uniquement.');
-    await expert.getByRole('button', { name: 'Enregistrer', exact: true }).first().click();
-    await expect(expert.getByRole('status')).toContainText('Modifications enregistrées');
+    // L'enregistrement est automatique ; on attend l'accusé du serveur.
+    await expert.waitForResponse(
+      (r) =>
+        r.request().method() === 'PUT' &&
+        r.url().includes('/api/expert/evaluation') &&
+        r.status() === 200,
+    );
+    await expect(expert.locator('.save-state')).toContainText('Enregistré');
     await expert.reload();
     await expect(
       expert.getByRole('textbox', { name: 'Note expert — Qualité de travail', exact: true }),
     ).toHaveValue('4.8');
-    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    // Aucun déclencheur manuel ici : la page de l'enseignant·e doit se mettre à
+    // jour d'elle-même, poussée par le flux SSE. Si le push tombe en panne, ce
+    // test échoue au lieu d'être sauvé par un rafraîchissement provoqué.
     await expect(
       page.getByRole('textbox', { name: 'Expert·e — Qualité de travail', exact: true }),
     ).toHaveValue('4.8');
@@ -86,7 +96,8 @@ test('copie le lien, saisit sans connexion et reporte les notes expert jusqu’a
     await expect(
       expert.getByRole('textbox', { name: 'Note expert — Qualité de travail', exact: true }),
     ).toBeDisabled();
-    await expect(expert.getByRole('button', { name: 'Enregistrer', exact: true })).toHaveCount(0);
+    // Verrouillée : l'indicateur d'enregistrement disparaît avec la saisie.
+    await expect(expert.locator('.save-state')).toHaveCount(0);
     await expert.screenshot({ path: 'test-results/expert-page.png', fullPage: true });
   } finally {
     await context.close();

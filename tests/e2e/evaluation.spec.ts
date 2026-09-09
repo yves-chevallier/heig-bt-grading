@@ -39,10 +39,15 @@ test('parcours complet : créer, noter, protocole, PDF, verrouiller et relire', 
       }
     }
   }
-  await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
-  await expect(page.locator('.editor-status [role=status]')).toContainText(
-    'Modifications enregistrées',
+  // Plus de bouton « Enregistrer » : l'écriture part d'elle-même après une
+  // pause. On attend que le serveur ait accusé réception plutôt que de se fier
+  // au seul libellé de l'indicateur, qui affiche déjà « Enregistré » avant la
+  // saisie et rendrait l'assertion vraie trop tôt.
+  await page.waitForResponse(
+    (r) =>
+      r.request().method() === 'PUT' && r.url().includes('/api/evaluations/') && r.status() === 200,
   );
+  await expect(page.locator('.save-state')).toContainText('Enregistré');
   await page.screenshot({ path: 'test-results/grille.png', fullPage: true });
   for (const role of ['Enseignant·e', 'Expert·e']) {
     await page.getByRole('button', { name: `Oral · ${role}`, exact: true }).click();

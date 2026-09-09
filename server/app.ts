@@ -16,6 +16,7 @@ import {
 } from '../shared/evaluation';
 import { expertInput, expertInputSchema, type ExpertEvaluation } from '../shared/expert';
 import { renderPdf } from './pdf';
+import { EventHub } from './events';
 
 // Routes servies par le serveur, par opposition aux routes de navigation de la
 // SPA : jamais mises en cache, et 404 JSON plutôt que repli sur index.html.
@@ -124,6 +125,14 @@ export async function createApp(
             ? 'Une erreur est survenue. Veuillez réessayer.'
             : err.message,
     });
+  });
+  const events = new EventHub();
+  app.addHook('onClose', async () => events.closeAll());
+  // Flux SSE des changements. La garde d'authentification ci-dessus s'applique
+  // (la route est sous /api/ et n'est pas exemptée), donc on a déjà req.user.
+  app.get('/api/events', async (req, reply) => {
+    reply.hijack();
+    events.subscribe(req.user!.id, reply);
   });
   app.get('/healthz', async () => ({ ok: true }));
   app.get('/api/me', async (req) => ({
@@ -235,13 +244,18 @@ export async function createApp(
           return reply
             .code(409)
             .send({ error: 'L’évaluation a changé. Rechargez les données avant de poursuivre.' });
+        // C'est la propagation qui compte le plus : l'enseignant·e voit arriver
+        // les notes de l'expert sans recharger sa page.
+        events.publish(access.owner);
         return expertView(saved);
       },
     });
   }
   app.post('/api/evaluations', async (req, reply) => {
     const data = evaluationSchema.parse(req.body);
-    return reply.code(201).send(store.create(req.user!.id, data));
+    const created = store.create(req.user!.id, data);
+    events.publish(req.user!.id);
+    return reply.code(201).send(created);
   });
   app.get<{ Params: { id: string } }>('/api/evaluations/:id', async (req, reply) => {
     const evaluation = store.get(req.user!.id, req.params.id);
@@ -267,13 +281,15 @@ export async function createApp(
           if (issues.length) return reply.code(400).send({ error: issues.join(' ') });
         }
         const updated = store.update(req.user!.id, req.params.id, body.version, body.data, lock);
-        return (
-          updated ??
-          reply.code(409).send({
+        if (!updated)
+          return reply.code(409).send({
             error:
               'Cette évaluation a été modifiée dans une autre fenêtre. Rechargez-la avant de poursuivre.',
-          })
-        );
+          });
+        // Réveille les autres onglets de la même personne, et la liste des
+        // évaluations ouverte à côté de l'éditeur.
+        events.publish(req.user!.id);
+        return updated;
       },
     });
   }
