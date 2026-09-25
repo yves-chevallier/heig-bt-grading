@@ -1,10 +1,12 @@
 # Vhost de tb.chevallier.io.
 #
-# La VM héberge deux services derrière le même Caddy natif (apt). Le
+# La VM héberge trois services derrière le même Caddy natif (apt). Le
 # /etc/caddy/Caddyfile de l'hôte ne contient qu'un `import conf.d/*.caddy` :
-# chaque projet dépose son propre fragment, sans jamais écraser celui de
-# l'autre. Déploiement :
-#   sudo cp Caddyfile /etc/caddy/conf.d/tb.caddy && sudo systemctl reload caddy
+# chaque projet dépose son propre fragment, sans jamais écraser celui des
+# autres. Déploiement, en srv (deploy.md §2) :
+#   cp Caddyfile /etc/caddy/conf.d/tb.caddy \
+#     && sudo caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile \
+#     && sudo systemctl reload caddy
 tb.chevallier.io {
 	encode gzip
 

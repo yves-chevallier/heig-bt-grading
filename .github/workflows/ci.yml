@@ -26,8 +26,8 @@ jobs:
       - run: pnpm test
 
   # Image de production, construite ICI puis poussée sur GHCR : la VM
-  # (453 Mio / 1 CPU) ne doit jamais builder — un build local y étrangle le
-  # Postgres de heig-classroom (deploy.md §7).
+  # (1 vCPU / 2 Go, partagée par trois services) ne doit jamais builder — un
+  # build local y étrangle les Postgres des autres services (deploy.md §5).
   image:
     needs: checks
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -54,12 +54,12 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Déploiement : le runner se connecte en SSH à la VM, dont le authorized_keys
-  # épingle la clé du CI à /opt/evaluation-tb/deploy.sh (commande forcée) — la
-  # clé ne peut QUE déployer tb, jamais ouvrir un shell ni toucher à
-  # heig-classroom. Le token GHCR éphémère est passé comme commande SSH
-  # (→ $SSH_ORIGINAL_COMMAND) pour tirer l'image privée sans stocker le moindre
-  # credential sur la VM. Sans le secret DEPLOY_SSH_KEY le job ne fait rien :
+  # Déploiement : le runner se connecte en SSH à la VM (compte DEPLOY_USER=srv),
+  # dont le authorized_keys épingle la clé du CI à /srv/evaluation-tb/deploy.sh
+  # (commande forcée) — la clé ne peut QUE déployer tb, jamais ouvrir un shell
+  # ni toucher à heig-quiz ou heig-classroom. Le token GHCR éphémère est passé
+  # comme commande SSH (→ $SSH_ORIGINAL_COMMAND) pour tirer l'image privée
+  # sans stocker le moindre credential sur la VM. Sans le secret DEPLOY_SSH_KEY le job ne fait rien :
   # le pipeline reste vert et l'image est quand même publiée.
   deploy:
     needs: image
