@@ -5,7 +5,8 @@
 services:
   web:
     # Image construite par le CI et tirée de GHCR — JAMAIS construite sur la VM
-    # (453 Mio / 1 CPU : un build local étrangle heig-classroom, deploy.md §7).
+    # (1 vCPU / 2 Go partagés par trois services : un build local étrangle les
+    # autres, deploy.md §5).
     # Rollback : IMAGE_TAG=<sha du commit> docker compose ... up -d
     image: ghcr.io/yves-chevallier/heig-bt-grading:${IMAGE_TAG:-latest}
     restart: always
