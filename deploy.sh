@@ -15,7 +15,15 @@
 # contente de tirer une image préconstruite et de redémarrer.
 set -euo pipefail
 
-cd /opt/evaluation-tb
+# Le checkout du script lui-même : /opt/evaluation-tb sur la VM DigitalOcean (root,
+# Docker rootful), /srv/evaluation-tb sur la VM Hetzner (compte `srv`, Docker rootless).
+cd "$(dirname "$(readlink -f "$0")")"
+
+# Docker rootless écoute sur un socket par utilisateur ; une session SSH à
+# commande forcée ne charge pas toujours le profil qui l'exporte.
+if [ "$(id -u)" != 0 ] && [ -z "${DOCKER_HOST:-}" ]; then
+  export DOCKER_HOST="unix:///run/user/$(id -u)/docker.sock"
+fi
 
 # Les deux services de la VM partageaient /root/.docker/config.json : le login
 # de heig-classroom (utilisateur heig-tin-info) y restait stocké et faisait
